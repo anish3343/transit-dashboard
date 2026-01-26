@@ -5,6 +5,13 @@ export const GTFS_STATIC_URLS = {
     bus_manhattan: 'https://rrgtfsfeeds.s3.amazonaws.com/gtfs_m.zip',
 };
 
+export const GTFS_REALTIME_PROTOBUF_URLS = {
+    gtfs_realtime: 'https://raw.githubusercontent.com/google/transit/master/gtfs-realtime/proto/gtfs-realtime.proto',
+    subway: 'https://raw.githubusercontent.com/OneBusAway/onebusaway-gtfs-realtime-api/master/src/main/proto/com/google/transit/realtime/gtfs-realtime-NYCT.proto',
+    mnr: 'https://raw.githubusercontent.com/OneBusAway/onebusaway-gtfs-realtime-api/master/src/main/proto/com/google/transit/realtime/gtfs-realtime-MTARR.proto',
+    service_alerts: 'https://raw.githubusercontent.com/OneBusAway/onebusaway-gtfs-realtime-api/master/src/main/proto/com/google/transit/realtime/gtfs-realtime-service-status.proto'
+}
+
 export const FEEDS = {
     subway: {
         url: 'https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs',
@@ -17,6 +24,9 @@ export const FEEDS = {
     mnr: {
         url: 'https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/mnr%2Fgtfs-mnr',
     },
+    service_alerts: {
+        url: 'https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fall-alerts',
+    }
 };
 
 export const STATIONS = [

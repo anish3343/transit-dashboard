@@ -39,17 +39,19 @@ export async function GET() {
                     }));
                     await db.batch(statements, 'write');
                 }
-                console.log(`Updated  for ${feed.key}: ${records.length} rows`);
+                console.log(`Updated ${tableName} for ${feed.key}: ${records.length} rows`);
             };
 
             // Process Stops
-            await processFile('stops.txt', 'stops', ['stop_id', 'stop_name'], (row) => ({
+            await processFile('stops.txt', 'stops', ['system', 'stop_id', 'stop_name'], (row) => ({
+                system: feed.key,
                 stop_id: row.stop_id,
                 stop_name: row.stop_name
             }));
 
             // Process Trips
-            await processFile('trips.txt', 'trips', ['trip_id', 'route_id', 'trip_headsign', 'trip_short_name', 'direction_id'], (row) => {
+            let tripLogCount = 0;
+            await processFile('trips.txt', 'trips', ['system', 'trip_id', 'route_id', 'trip_headsign', 'trip_short_name', 'direction_id'], (row) => {
                 let shortName = row.trip_short_name || '';
 
                 // Special handling for Subway: 
@@ -62,7 +64,13 @@ export async function GET() {
                     }
                 }
 
+                // Special handling for MNR: Fallback to trip_id if short name is missing
+                if (feed.key === 'mnr' && !shortName) {
+                    shortName = row.trip_id;
+                }
+
                 return {
+                    system: feed.key,
                     trip_id: row.trip_id,
                     route_id: row.route_id,
                     trip_headsign: row.trip_headsign,
@@ -72,7 +80,8 @@ export async function GET() {
             });
 
             // Process Routes
-            await processFile('routes.txt', 'routes', ['route_id', 'route_short_name', 'route_long_name', 'route_color', 'route_text_color'], (row) => ({
+            await processFile('routes.txt', 'routes', ['system', 'route_id', 'route_short_name', 'route_long_name', 'route_color', 'route_text_color'], (row) => ({
+                system: feed.key,
                 route_id: row.route_id,
                 route_short_name: row.route_short_name,
                 route_long_name: row.route_long_name,

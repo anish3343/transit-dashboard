@@ -1,17 +1,16 @@
-import { createClient } from '@libsql/client';
-import path from 'path';
+import { NextResponse } from 'next/server';
+import db from '@/lib/db';
 
-const url = process.env.TURSO_DATABASE_URL || `file:${path.join(process.cwd(), 'transit.db')}`;
-const authToken = process.env.TURSO_AUTH_TOKEN;
-
-const db = createClient({
-    url,
-    authToken,
-});
-
-// Initialize schema
-(async () => {
+export async function GET() {
     try {
+        // Drop existing tables
+        await db.batch([
+            'DROP TABLE IF EXISTS stops',
+            'DROP TABLE IF EXISTS trips',
+            'DROP TABLE IF EXISTS routes',
+        ], 'write');
+
+        // Recreate tables with new schema
         await db.batch([
             `CREATE TABLE IF NOT EXISTS stops (
                 system TEXT,
@@ -38,9 +37,10 @@ const db = createClient({
                 PRIMARY KEY (system, route_id)
             )`
         ], 'write');
-    } catch (error) {
-        console.error('Database initialization failed:', error);
-    }
-})();
 
-export default db;
+        return NextResponse.json({ message: 'Database reset and schema recreated.' });
+    } catch (error) {
+        console.error('Database reset failed:', error);
+        return NextResponse.json({ error: 'Database reset failed' }, { status: 500 });
+    }
+}
