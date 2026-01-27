@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 export function LoadingSkeleton({ className }: { className?: string }) {
   return (
     <motion.div
-      className={cn("neomorph-inset overflow-hidden relative", className)}
+      className={cn("bg-muted rounded-sm overflow-hidden relative", className)}
       animate={{
         opacity: [0.5, 0.8, 0.5],
       }}
@@ -16,14 +16,14 @@ export function LoadingSkeleton({ className }: { className?: string }) {
         ease: "easeInOut"
       }}
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-muted to-transparent animate-shimmer" />
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-card to-transparent animate-shimmer" />
     </motion.div>
   );
 }
 
 export function StationLoadingState() {
   return (
-    <div className="neomorph p-6">
+    <div className="border border-border rounded-sm p-6 lg:p-8 bg-card">
       <LoadingSkeleton className="h-7 w-3/4 mb-6" />
       <div className="space-y-4">
         {[1, 2, 3, 4, 5].map((i) => (

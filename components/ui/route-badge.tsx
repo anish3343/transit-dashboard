@@ -34,10 +34,9 @@ export function RouteBadge({
     <motion.div
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      whileHover={{ scale: 1.05 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        "relative inline-flex items-center justify-center font-bold shadow-lg cursor-help",
+        "inline-flex items-center justify-center font-bold cursor-help",
         isCircular
           ? "w-8 h-8 rounded-full"
           : "px-3 py-1 rounded-full min-w-[3rem]",
@@ -55,14 +54,6 @@ export function RouteBadge({
       )}>
         {displayText}
       </span>
-
-      {/* Subtle inner highlight for depth */}
-      <div
-        className="absolute inset-0 rounded-full opacity-20"
-        style={{
-          background: `radial-gradient(circle at 30% 30%, white, transparent 70%)`
-        }}
-      />
     </motion.div>
   );
 }

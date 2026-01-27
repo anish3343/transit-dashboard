@@ -1,3 +1,5 @@
+import type { Station, TransitSystem } from './types';
+
 export const GTFS_STATIC_URLS = {
     subway: 'https://rrgtfsfeeds.s3.amazonaws.com/gtfs_subway.zip',
     subway_supplemented: 'https://rrgtfsfeeds.s3.amazonaws.com/gtfs_supplemented.zip',
@@ -29,11 +31,11 @@ export const FEEDS = {
     }
 };
 
-export const STATIONS = [
-    { stopId: '632N', label: '33 St (North)', feed: 'subway' },
-    { stopId: '632S', label: '33 St (South)', feed: 'subway' },
-    { stopId: '402677', label: '3 Av/E 37 St', feed: 'bus' },
-    { stopId: '405530', label: 'Lexington Av/E 37 St', feed: 'bus' },
-    { stopId: '1', label: 'Grand Central', feed: 'mnr' }, // stop code 0NY
-    { stopId: '128', label: 'Darien', feed: 'mnr' }, // stop code 2DA
+export const STATIONS: Station[] = [
+    { stopId: '632N', label: '33 St (North)', feed: 'subway' as TransitSystem },
+    { stopId: '632S', label: '33 St (South)', feed: 'subway' as TransitSystem },
+    { stopId: '402677', label: '3 Av/E 37 St', feed: 'bus' as TransitSystem },
+    { stopId: '405530', label: 'Lexington Av/E 37 St', feed: 'bus' as TransitSystem },
+    { stopId: '1', label: 'Grand Central', feed: 'mnr' as TransitSystem }, // stop code 0NY
+    { stopId: '128', label: 'Darien', feed: 'mnr' as TransitSystem }, // stop code 2DA
 ];

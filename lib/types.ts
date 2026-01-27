@@ -84,3 +84,15 @@ export interface ApiSuccessResponse<T> {
 }
 
 export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+// Favorites and settings types
+
+export interface FavoritesState {
+  favorites: string[];
+  order: string[];
+}
+
+export interface DashboardSettings {
+  ambientMode: boolean;
+  showFavoritesOnly: boolean;
+}

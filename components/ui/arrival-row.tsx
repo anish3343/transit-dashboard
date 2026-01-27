@@ -12,16 +12,24 @@ interface ArrivalRowProps {
   alerts: Alert[];
   onAlertClick: (alerts: Alert[]) => void;
   index: number;
+  ambientMode: boolean;
 }
 
-export function ArrivalRow({ arrival, minutes, alerts, onAlertClick, index }: ArrivalRowProps) {
+export function ArrivalRow({
+  arrival,
+  minutes,
+  alerts,
+  onAlertClick,
+  index,
+  ambientMode,
+}: ArrivalRowProps) {
   return (
     <motion.li
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      transition={{ delay: index * 0.05 }}
-      className="flex items-center justify-between py-3 px-4 neomorph-flat hover:shadow-xl transition-shadow group"
+      transition={{ delay: index * 0.05, duration: 0.3, ease: 'easeOut' }}
+      className="flex items-center justify-between gap-6 py-4 border-b border-border last:border-0"
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {/* Route Badge */}
@@ -45,7 +53,7 @@ export function ArrivalRow({ arrival, minutes, alerts, onAlertClick, index }: Ar
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => onAlertClick(alerts)}
-            className="text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300 transition-colors neomorph-inset p-1.5 rounded-full"
+            className="text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300 transition-colors p-1.5 border border-border rounded-sm"
             title={`${alerts.length} active alert(s)`}
           >
             <AlertTriangle className="w-4 h-4" />
@@ -54,28 +62,33 @@ export function ArrivalRow({ arrival, minutes, alerts, onAlertClick, index }: Ar
 
         {/* Destination */}
         {arrival.destination && (
-          <span className="text-sm font-medium text-foreground truncate">
+          <span className="text-sm sm:text-base font-normal text-foreground truncate">
             {arrival.destination}
           </span>
         )}
       </div>
 
       {/* Time */}
-      <div className="text-right ml-4 flex-shrink-0">
+      <div className="text-right flex-shrink-0">
         <motion.span
           key={minutes}
-          initial={{ scale: 1.2, opacity: 0 }}
+          initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="block font-mono text-lg font-bold text-foreground"
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className={`block font-light tabular-countdown ${
+            ambientMode ? 'text-6xl sm:text-7xl' : 'text-5xl sm:text-6xl'
+          }`}
         >
-          {minutes < 1 ? 'Now' : `${minutes} min`}
+          {minutes < 1 ? 'Now' : `${minutes}`}
         </motion.span>
-        <span className="text-xs text-muted-foreground font-mono">
-          {new Date(arrival.arrivalTime * 1000).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-          })}
-        </span>
+        {!ambientMode && (
+          <span className="text-xs text-muted-foreground font-normal mt-1 block">
+            {new Date(arrival.arrivalTime * 1000).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </span>
+        )}
       </div>
     </motion.li>
   );

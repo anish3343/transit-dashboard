@@ -14,11 +14,11 @@ export function TrackBadge({ track, className }: TrackBadgeProps) {
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       className={cn(
-        "neomorph-inset px-3 py-1 inline-flex items-center justify-center min-w-[3rem]",
+        "border border-border rounded-sm px-3 py-1 inline-flex items-center justify-center min-w-[3rem] bg-background",
         className
       )}
     >
-      <span className="text-xs font-bold text-foreground">
+      <span className="text-xs font-medium text-foreground">
         Trk {track}
       </span>
     </motion.div>

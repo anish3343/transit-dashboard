@@ -26,34 +26,32 @@ export function AlertModal({ alerts, onClose }: AlertModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-[1px]"
           />
 
           {/* Modal */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
               onClick={(e) => e.stopPropagation()}
-              className="neomorph max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col pointer-events-auto"
+              className="bg-card border border-border rounded-sm max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col pointer-events-auto"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-card z-10">
                 <div className="flex items-center gap-3">
-                  <div className="neomorph-inset p-2 rounded-full">
-                    <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-foreground">
+                  <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                  <h3 className="text-2xl font-medium text-foreground">
                     Service Alerts
                   </h3>
                 </div>
                 <motion.button
-                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={onClose}
-                  className="neomorph-inset p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                  className="p-2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </motion.button>
@@ -67,9 +65,9 @@ export function AlertModal({ alerts, onClose }: AlertModalProps) {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="neomorph-flat p-6 space-y-3"
+                    className="border border-border rounded-sm p-6 space-y-3 bg-background"
                   >
-                    <h4 className="font-bold text-lg text-yellow-700 dark:text-yellow-500 flex items-start gap-2">
+                    <h4 className="font-medium text-lg text-yellow-700 dark:text-yellow-500 flex items-start gap-2">
                       <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                       <span>{getTranslation(alert.headerText)}</span>
                     </h4>
