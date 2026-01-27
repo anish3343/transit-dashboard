@@ -1,46 +1,35 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { getDropStatements, getSchemaStatements } from '@/lib/db-schema';
 
-export async function GET() {
+export async function POST() {
+    // Security: Only allow in development
+    if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json(
+            { error: 'Database reset is not allowed in production' },
+            { status: 403 }
+        );
+    }
+
     try {
         // Drop existing tables
-        await db.batch([
-            'DROP TABLE IF EXISTS stops',
-            'DROP TABLE IF EXISTS trips',
-            'DROP TABLE IF EXISTS routes',
-        ], 'write');
+        await db.batch(getDropStatements(), 'write');
 
-        // Recreate tables with new schema
-        await db.batch([
-            `CREATE TABLE IF NOT EXISTS stops (
-                system TEXT,
-                stop_id TEXT,
-                stop_name TEXT,
-                PRIMARY KEY (system, stop_id)
-            )`,
-            `CREATE TABLE IF NOT EXISTS trips (
-                system TEXT,
-                trip_id TEXT,
-                route_id TEXT,
-                trip_headsign TEXT,
-                trip_short_name TEXT,
-                direction_id INTEGER,
-                PRIMARY KEY (system, trip_id)
-            )`,
-            `CREATE TABLE IF NOT EXISTS routes (
-                system TEXT,
-                route_id TEXT,
-                route_short_name TEXT,
-                route_long_name TEXT,
-                route_color TEXT,
-                route_text_color TEXT,
-                PRIMARY KEY (system, route_id)
-            )`
-        ], 'write');
+        // Recreate tables with schema
+        await db.batch(getSchemaStatements(), 'write');
 
-        return NextResponse.json({ message: 'Database reset and schema recreated.' });
+        return NextResponse.json({
+            success: true,
+            message: 'Database reset and schema recreated.'
+        });
     } catch (error) {
         console.error('Database reset failed:', error);
-        return NextResponse.json({ error: 'Database reset failed' }, { status: 500 });
+        return NextResponse.json(
+            {
+                error: 'Database reset failed',
+                details: error instanceof Error ? error.message : 'Unknown error'
+            },
+            { status: 500 }
+        );
     }
 }
