@@ -6,7 +6,8 @@ import protobuf from 'protobufjs';
 import fs from 'fs';
 import path from 'path';
 import db from './db';
-import { FEEDS, STATIONS } from './stops';
+import { FEEDS } from './stops';
+import { fetchStationComplexInfo } from './station-utils';
 import {
     TransitSystem,
     TripInfo,
@@ -152,6 +153,8 @@ export async function fetchTripInfos(
 
     if (tripIds.size === 0) return tripInfos;
 
+    console.log(`[${feedKey}] Searching for ${tripIds.size} trip IDs:`, Array.from(tripIds).slice(0, 10));
+
     const placeholders = Array.from(tripIds).map(() => '?').join(',');
     const rs = await db.execute({
         sql: `
@@ -171,6 +174,13 @@ export async function fetchTripInfos(
     });
 
     console.log(`[${feedKey}] Found ${rs.rows.length} matching trips in DB`);
+    if (rs.rows.length > 0) {
+        console.log(`[${feedKey}] Sample matched trip:`, {
+            trip_id: rs.rows[0].trip_id,
+            trip_short_name: rs.rows[0].trip_short_name,
+            trip_headsign: rs.rows[0].trip_headsign
+        });
+    }
 
     for (const row of rs.rows) {
         const info: TripInfo = {
@@ -223,6 +233,34 @@ export async function fetchRouteInfos(
 }
 
 /**
+ * Fetches stop names from database
+ */
+export async function fetchStopNames(
+    feedKey: TransitSystem,
+    stopIds: Set<string>
+): Promise<Map<string, string>> {
+    const stopNames = new Map<string, string>();
+
+    if (stopIds.size === 0) return stopNames;
+
+    const placeholders = Array.from(stopIds).map(() => '?').join(',');
+    const rs = await db.execute({
+        sql: `SELECT stop_id, stop_name
+              FROM stops
+              WHERE system = ? AND stop_id IN (${placeholders})`,
+        args: [feedKey, ...Array.from(stopIds)]
+    });
+
+    console.log(`[${feedKey}] Found ${rs.rows.length} matching stops in DB`);
+
+    for (const row of rs.rows) {
+        stopNames.set(row.stop_id as string, row.stop_name as string);
+    }
+
+    return stopNames;
+}
+
+/**
  * Extracts trip ID based on feed type (MNR uses entity.id)
  */
 export function extractTripId(entity: any, feedKey: TransitSystem): string | undefined {
@@ -246,15 +284,20 @@ export function normalizeTime(time: any): number | undefined {
 /**
  * Processes arrivals from feed entities with enrichment data
  */
-export function processArrivals(
+export async function processArrivals(
     feed: any,
     feedKey: TransitSystem,
     targetStopIds: Set<string>,
     tripInfos: Map<string, TripInfo>,
-    routeInfos: Map<string, RouteInfo>
-): Arrival[] {
-    const feedStations = STATIONS.filter(s => s.feed === feedKey);
+    routeInfos: Map<string, RouteInfo>,
+    stopNames: Map<string, string>
+): Promise<Arrival[]> {
     const relevantEntities = feed.entity.filter((entity: any) => entity.tripUpdate);
+
+    // Fetch station complex info for all target stops (subway only for now)
+    const stationComplexInfo = feedKey.startsWith('subway-')
+        ? await fetchStationComplexInfo(targetStopIds)
+        : new Map();
 
     const arrivals = relevantEntities
         .map((entity: any) => {
@@ -270,7 +313,18 @@ export function processArrivals(
 
                     if (tripId && !tripInfo) {
                         console.warn(`[${feedKey}] No trip info found for ID: ${tripId}`);
+                        console.warn(`[${feedKey}] Available trip IDs in map:`, Array.from(tripInfos.keys()).slice(0, 5));
                     }
+
+                    // Extract MNR track from protobuf extension
+                    let track: string | undefined;
+                    if (feedKey === 'mnr') {
+                        const extension = (stop as any)['.transit_realtime.mtaRailroadStopTimeUpdate'];
+                        track = extension?.track;
+                    }
+
+                    // Get station complex info for this stop
+                    const complexInfo = stationComplexInfo.get(stop.stopId);
 
                     return {
                         system: feedKey,
@@ -280,11 +334,15 @@ export function processArrivals(
                         routeLongName: tripInfo?.routeLongName || routeInfo?.longName,
                         routeColor: tripInfo?.routeColor || routeInfo?.color,
                         routeTextColor: tripInfo?.routeTextColor || routeInfo?.textColor,
-                        track: (stop as any).mtaRailroadStopTimeUpdate?.track,
+                        track,
                         stopId: stop.stopId,
-                        label: feedStations.find(s => s.stopId === stop.stopId)?.label,
+                        label: stopNames.get(stop.stopId),
                         destination: tripInfo?.headsign || '',
-                        arrivalTime: time as number
+                        arrivalTime: time as number,
+                        borough: complexInfo?.borough,
+                        boroughName: complexInfo?.boroughName,
+                        complexId: complexInfo?.complexId,
+                        displayName: complexInfo?.displayName
                     };
                 });
         })

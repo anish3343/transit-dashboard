@@ -1,4 +1,4 @@
-import type { Station, TransitSystem } from './types';
+import type { SubwayFeed } from './types';
 
 export const GTFS_STATIC_URLS = {
     subway: 'https://rrgtfsfeeds.s3.amazonaws.com/gtfs_subway.zip',
@@ -15,8 +15,30 @@ export const GTFS_REALTIME_PROTOBUF_URLS = {
 }
 
 export const FEEDS = {
-    subway: {
+    // Subway feeds by line group
+    'subway-ace': {
+        url: 'https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-ace',
+    },
+    'subway-bdfm': {
+        url: 'https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-bdfm',
+    },
+    'subway-g': {
+        url: 'https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-g',
+    },
+    'subway-jz': {
+        url: 'https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-jz',
+    },
+    'subway-nqrw': {
+        url: 'https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-nqrw',
+    },
+    'subway-l': {
+        url: 'https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-l',
+    },
+    'subway-1234567': {
         url: 'https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs',
+    },
+    'subway-sir': {
+        url: 'https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-si',
     },
     bus: {
         url: 'https://gtfsrt.prod.obanyc.com/tripUpdates',
@@ -31,11 +53,17 @@ export const FEEDS = {
     }
 };
 
-export const STATIONS: Station[] = [
-    { stopId: '632N', label: '33 St (North)', feed: 'subway' as TransitSystem },
-    { stopId: '632S', label: '33 St (South)', feed: 'subway' as TransitSystem },
-    { stopId: '402677', label: '3 Av/E 37 St', feed: 'bus' as TransitSystem },
-    { stopId: '405530', label: 'Lexington Av/E 37 St', feed: 'bus' as TransitSystem },
-    { stopId: '1', label: 'Grand Central', feed: 'mnr' as TransitSystem }, // stop code 0NY
-    { stopId: '128', label: 'Darien', feed: 'mnr' as TransitSystem }, // stop code 2DA
+// List of all subway feed keys
+export const SUBWAY_FEEDS: SubwayFeed[] = [
+    'subway-ace',
+    'subway-bdfm',
+    'subway-g',
+    'subway-jz',
+    'subway-nqrw',
+    'subway-l',
+    'subway-1234567',
+    'subway-sir',
 ];
+
+// Removed: STATIONS array is no longer needed
+// Stop names are now fetched dynamically from the database

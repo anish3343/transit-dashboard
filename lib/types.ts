@@ -1,6 +1,7 @@
 // Type definitions for GTFS data structures
 
-export type TransitSystem = 'subway' | 'bus' | 'mnr' | 'service_alerts';
+export type SubwayFeed = 'subway-ace' | 'subway-bdfm' | 'subway-g' | 'subway-jz' | 'subway-nqrw' | 'subway-l' | 'subway-1234567' | 'subway-sir';
+export type TransitSystem = SubwayFeed | 'bus' | 'mnr' | 'service_alerts';
 
 export interface FeedConfig {
     url: string;
@@ -42,6 +43,10 @@ export interface Arrival {
     label?: string;
     destination: string;
     arrivalTime: number;
+    borough?: string;
+    boroughName?: string;
+    complexId?: string;
+    displayName?: string;
 }
 
 export interface Alert {
@@ -95,4 +100,41 @@ export interface FavoritesState {
 export interface DashboardSettings {
   ambientMode: boolean;
   showFavoritesOnly: boolean;
+}
+
+export interface StopInfo {
+  system: string;
+  stopId: string;
+  stopName: string;
+  routes: Array<{
+    routeId: string;
+    routeShortName: string | null;
+    routeLongName: string | null;
+    routeColor: string | null;
+    routeTextColor: string | null;
+  }>;
+}
+
+export interface SelectedStop {
+  system: string;
+  stopId: string;
+}
+
+export interface ComplexRouteInfo {
+  routeId: string;
+  routeShortName: string | null;
+  routeLongName: string | null;
+  routeColor: string | null;
+  routeTextColor: string | null;
+}
+
+export interface ComplexInfo {
+  complexId: string;
+  displayName: string;
+  borough: string;
+  boroughName: string;
+  system: string;
+  routes: ComplexRouteInfo[];
+  stopIds: string[]; // All directional stop IDs (e.g., ["101N", "101S"])
+  parentStopIds: string[]; // Parent stop IDs (e.g., ["101"])
 }

@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { STATIONS } from '../../../lib/stops';
 import {
     isValidFeedKey,
     fetchFeedData,
@@ -7,12 +6,13 @@ import {
     processServiceAlerts,
     fetchTripInfos,
     fetchRouteInfos,
+    fetchStopNames,
     processArrivals,
     extractTripId
 } from '../../../lib/feed-utils';
 
 export async function GET(
-    _request: Request,
+    request: Request,
     props: { params: Promise<{ feed: string }> }
 ) {
     try {
@@ -37,9 +37,20 @@ export async function GET(
             return NextResponse.json({ alerts });
         }
 
-        // Filter for stations belonging to this feed
-        const feedStations = STATIONS.filter(s => s.feed === feedKey);
-        const targetStopIds = new Set(feedStations.map(s => s.stopId));
+        // Get selected stops from query parameter
+        const { searchParams } = new URL(request.url);
+        const stopsParam = searchParams.get('stops');
+
+        // Parse stop IDs from parameter (required)
+        if (!stopsParam) {
+            return NextResponse.json({ arrivals: [] });
+        }
+
+        const targetStopIds = new Set(stopsParam.split(',').filter(Boolean));
+
+        if (targetStopIds.size === 0) {
+            return NextResponse.json({ arrivals: [] });
+        }
 
         // Identify trips and routes that are relevant to our target stops
         const relevantEntities = feed.entity.filter((entity: any) => entity.tripUpdate);
@@ -63,19 +74,24 @@ export async function GET(
             }
         }
 
+        // Normalize feedKey for database queries (all subway feeds use 'subway' in DB)
+        const dbFeedKey = feedKey.startsWith('subway-') ? 'subway' : feedKey;
+
         // Fetch enrichment data from database
-        const [tripInfos, routeInfos] = await Promise.all([
-            fetchTripInfos(feedKey, tripIdsToFetch),
-            fetchRouteInfos(feedKey, routeIdsToFetch)
+        const [tripInfos, routeInfos, stopNames] = await Promise.all([
+            fetchTripInfos(dbFeedKey as any, tripIdsToFetch),
+            fetchRouteInfos(dbFeedKey as any, routeIdsToFetch),
+            fetchStopNames(dbFeedKey as any, targetStopIds)
         ]);
 
         // Process arrivals with enrichment data
-        const arrivals = processArrivals(
+        const arrivals = await processArrivals(
             feed,
-            feedKey,
+            dbFeedKey as any,
             targetStopIds,
             tripInfos,
-            routeInfos
+            routeInfos,
+            stopNames
         );
 
         return NextResponse.json({ arrivals });

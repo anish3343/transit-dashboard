@@ -1,38 +1,47 @@
 @import "tailwindcss";
 
 :root {
-  /* Swiss Minimal - Light Mode */
-  --background: 255 255 255; /* Pure white */
-  --foreground: 10 10 10; /* Near black */
-  --card: 255 255 255;
-  --card-foreground: 10 10 10;
+  /* Subway Station - Light Mode */
+  /* Inspired by white tile walls with black typography */
+  --background: 248 248 248; /* Slight off-white like station tiles */
+  --foreground: 0 0 0; /* Pure black like station signage */
+  --card: 255 255 255; /* Pure white cards */
+  --card-foreground: 0 0 0;
   --primary: 0 0 0;
   --primary-foreground: 255 255 255;
-  --muted: 245 245 245; /* Subtle gray */
-  --muted-foreground: 115 115 127;
-  --border: 230 230 230; /* Hairline borders */
-  --ring: 10 10 10;
+  --muted: 238 238 238; /* Light gray */
+  --muted-foreground: 100 100 100;
+  --border: 220 220 220; /* Subtle borders */
+  --ring: 0 0 0;
+  --accent: 240 240 240;
+  --accent-foreground: 0 0 0;
 
-  /* MTA Brand Colors */
-  --mta-blue: 0 57 166;
+  /* Station board specific colors */
+  --station-board-bg: 0 0 0; /* Black background for station boards */
+  --station-board-text: 255 255 255; /* White text on black */
+  --countdown-highlight: 255 200 0; /* Yellow for imminent departures */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Swiss Minimal - Dark Mode */
-    --background: 10 10 10; /* Deep black */
-    --foreground: 245 245 245; /* Off-white */
-    --card: 10 10 10;
-    --card-foreground: 245 245 245;
-    --primary: 255 255 255;
-    --primary-foreground: 10 10 10;
-    --muted: 26 26 26;
-    --muted-foreground: 161 161 170;
-    --border: 38 38 38;
-    --ring: 245 245 245;
+.dark {
+  /* Subway Station - Dark Mode */
+  /* Inspired by nighttime subway with illuminated signs */
+  --background: 15 15 15; /* Dark tunnel walls */
+  --foreground: 255 255 255; /* Bright white like lit signs */
+  --card: 25 25 25; /* Slightly lighter cards */
+  --card-foreground: 255 255 255;
+  --primary: 255 255 255;
+  --primary-foreground: 0 0 0;
+  --muted: 40 40 40;
+  --muted-foreground: 160 160 160;
+  --border: 50 50 50;
+  --ring: 255 255 255;
+  --accent: 35 35 35;
+  --accent-foreground: 255 255 255;
 
-    --mta-blue: 0 57 166;
-  }
+  /* Station board specific colors */
+  --station-board-bg: 0 0 0;
+  --station-board-text: 255 255 255;
+  --countdown-highlight: 255 200 0;
 }
 
 @theme inline {
@@ -46,67 +55,90 @@
   --color-muted-foreground: rgb(var(--muted-foreground));
   --color-border: rgb(var(--border));
   --color-ring: rgb(var(--ring));
-  --color-mta-blue: rgb(var(--mta-blue));
-  --font-sans: var(--font-inter);
+  --color-accent: rgb(var(--accent));
+  --color-accent-foreground: rgb(var(--accent-foreground));
+  --color-station-board-bg: rgb(var(--station-board-bg));
+  --color-station-board-text: rgb(var(--station-board-text));
+  --color-countdown-highlight: rgb(var(--countdown-highlight));
+  /* MTA uses Helvetica for signage - use system font stack with Helvetica priority */
+  --font-sans: "Helvetica Neue", Helvetica, Arial, -apple-system, system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
 }
 
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
-  transition: background-color 300ms ease, color 300ms ease;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* MTA station aesthetic - crisp, high contrast */
+  text-rendering: optimizeLegibility;
 }
 
-/* Ambient mode - dimmed text */
-body.ambient {
-  --foreground: 82 82 82; /* Dimmed for ambient display */
-  --muted-foreground: 64 64 64;
-}
-
-body.ambient.dark {
-  --foreground: 161 161 170;
-  --muted-foreground: 115 115 127;
-}
-
-/* Tabular numerals for countdowns - ensures digit alignment */
-.tabular-countdown {
+/* Tabular numerals for time displays */
+.tabular-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
-  letter-spacing: -0.02em;
 }
 
-/* Smooth transitions for theme and ambient mode */
-* {
-  transition-property: background-color, border-color, color;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
+/* Marquee animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
-/* Disable transitions for reduced motion preference */
+.marquee {
+  animation: marquee 15s linear infinite;
+}
+
+.marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
+  .marquee {
+    animation: none !important;
+  }
 }
 
-/* Custom scrollbar - flat minimal style */
+/* Custom scrollbar - minimal subway aesthetic */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-background);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-muted);
-  border-radius: 2px;
+  background: var(--color-border);
+  border-radius: 0; /* Square corners like subway tiles */
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-muted-foreground);
+}
+
+/* Horizontal scroll container - hide scrollbar but keep functionality */
+.horizontal-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }

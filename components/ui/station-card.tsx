@@ -69,31 +69,35 @@ export function StationCard({
       }, [] as typeof arrivalsWithMinutes)
     : arrivalsWithMinutes;
 
+  // Split into emphasized (first 3) and remaining
+  const emphasizedArrivals = displayArrivals.slice(0, 3);
+  const remainingArrivals = displayArrivals.slice(3);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="border border-border rounded-sm p-6 lg:p-8 bg-card"
+      className="border border-border rounded-sm p-3 bg-card flex flex-col h-full overflow-hidden"
     >
       {/* Station Header */}
-      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border">
-        <h2 className="text-xl sm:text-2xl font-medium tracking-tight text-foreground flex-1">
+      <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-border flex-shrink-0">
+        <h2 className="text-base sm:text-lg font-medium tracking-tight text-foreground flex-1 truncate">
           {stationName}
         </h2>
 
         {/* Favorite button */}
-        <FavoriteButton isFavorited={isFavorited} onToggle={onToggleFavorite} size="md" />
+        <FavoriteButton isFavorited={isFavorited} onToggle={onToggleFavorite} size="sm" />
 
         {/* Total alerts badge (hidden in ambient mode) */}
         {!ambientMode && alerts.length > 0 && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="px-3 py-1 rounded-sm border border-border bg-background"
+            className="px-2 py-0.5 rounded-sm border border-border bg-background"
           >
             <span className="text-xs font-medium text-yellow-600 dark:text-yellow-400">
-              {alerts.length} Alert{alerts.length > 1 ? 's' : ''}
+              {alerts.length}
             </span>
           </motion.div>
         )}
@@ -109,21 +113,49 @@ export function StationCard({
           <p className="text-muted-foreground italic">No upcoming arrivals</p>
         </motion.div>
       ) : (
-        <ul className="space-y-0">
-          <AnimatePresence mode="popLayout">
-            {displayArrivals.map((item, idx) => (
-              <ArrivalRow
-                key={`${item.arrival.tripId}-${item.arrival.stopId}-${idx}`}
-                arrival={item.arrival}
-                minutes={item.minutes}
-                alerts={item.alerts}
-                onAlertClick={onAlertClick}
-                index={idx}
-                ambientMode={ambientMode}
-              />
-            ))}
-          </AnimatePresence>
-        </ul>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Emphasized arrivals (first 3) */}
+          {emphasizedArrivals.length > 0 && (
+            <ul className="space-y-0 flex-shrink-0">
+              <AnimatePresence mode="popLayout">
+                {emphasizedArrivals.map((item, idx) => (
+                  <ArrivalRow
+                    key={`${item.arrival.tripId}-${item.arrival.stopId}-${idx}`}
+                    arrival={item.arrival}
+                    minutes={item.minutes}
+                    alerts={item.alerts}
+                    onAlertClick={onAlertClick}
+                    index={idx}
+                    ambientMode={ambientMode}
+                    isEmphasized={true}
+                  />
+                ))}
+              </AnimatePresence>
+            </ul>
+          )}
+
+          {/* Remaining arrivals (scrollable) */}
+          {remainingArrivals.length > 0 && (
+            <div className="flex-1 overflow-y-auto mt-1">
+              <ul className="space-y-0">
+                <AnimatePresence mode="popLayout">
+                  {remainingArrivals.map((item, idx) => (
+                    <ArrivalRow
+                      key={`${item.arrival.tripId}-${item.arrival.stopId}-${idx + 3}`}
+                      arrival={item.arrival}
+                      minutes={item.minutes}
+                      alerts={item.alerts}
+                      onAlertClick={onAlertClick}
+                      index={idx + 3}
+                      ambientMode={ambientMode}
+                      isEmphasized={false}
+                    />
+                  ))}
+                </AnimatePresence>
+              </ul>
+            </div>
+          )}
+        </div>
       )}
     </motion.div>
   );

@@ -47,6 +47,8 @@ The application follows this data flow:
 
 2. **GTFS Realtime Data** ([app/api/[feed]/route.ts](app/api/[feed]/route.ts))
    - Fetches protobuf feeds from MTA APIs every 30 seconds
+   - Subway uses **8 separate feeds** organized by line groups (ACE, BDFM, G, JZ, NQRW, L, 1234567, SIR)
+   - Frontend queries all relevant subway feeds in parallel when displaying subway stops
    - Decodes using `gtfs-realtime-bindings` (standard feeds) or `protobufjs` (MNR extended proto)
    - Joins realtime trip updates with static data from database to get headsigns and route colors
    - Returns enriched arrival data to frontend
@@ -72,8 +74,21 @@ Uses `@libsql/client` which supports both local SQLite files and remote Turso da
 The codebase handles three transit systems (subway, bus, mnr) with system-specific logic:
 
 **Subway:**
-- Trip ID matching: Realtime feed uses format `052150_6..N` but static schedule has `A2023..._052150_6..N`
-- Solution: Extract suffix as `trip_short_name` for matching ([app/api/gtfs/update/route.ts:58-65](app/api/gtfs/update/route.ts#L58-L65))
+- **Multiple Feeds**: MTA provides 8 separate realtime feeds organized by line groups:
+  - `subway-ace` - A, C, E lines (+ S Rockaway shuttle)
+  - `subway-bdfm` - B, D, F, M lines (+ S Franklin shuttle)
+  - `subway-g` - G line
+  - `subway-jz` - J, Z lines
+  - `subway-nqrw` - N, Q, R, W lines
+  - `subway-l` - L line
+  - `subway-1234567` - 1, 2, 3, 4, 5, 6, 7 lines (+ S 42nd St shuttle)
+  - `subway-sir` - Staten Island Railway
+- **Frontend Behavior**: When displaying subway stops, frontend queries ALL 8 feeds in parallel ([app/page.tsx:151-178](app/page.tsx#L151-L178))
+  - This is necessary because a single stop may be served by lines from multiple feeds
+  - Results are combined and deduplicated client-side
+- **Database Queries**: All subway feeds use `system='subway'` in database queries for static data
+- **Trip ID Matching**: Realtime feed uses format `052150_6..N` but static schedule has `A2023..._052150_6..N`
+  - Solution: Extract suffix as `trip_short_name` for matching ([app/api/gtfs/update/route.ts:58-65](app/api/gtfs/update/route.ts#L58-L65))
 
 **Bus:**
 - Authentication via query parameter (`?key=...`)
